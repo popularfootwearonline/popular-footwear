@@ -1,0 +1,155 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedInAs(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function validUserProfile(userId) {
+      return signedInAs(userId)
+        && request.resource.data.keys().hasAll(["uid", "name", "email", "createdAt"])
+        && request.resource.data.keys().hasOnly(["uid", "name", "email", "createdAt"])
+        && request.resource.data.uid == userId
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.createdAt == request.time;
+    }
+
+    function validOrder(userId) {
+      return signedInAs(userId)
+        && request.resource.data.keys().hasAll([
+          "userId", "email", "orderNumber", "status", "createdAt",
+          "productIds", "items", "totals", "shipping"
+        ])
+        && request.resource.data.keys().hasOnly([
+          "userId", "email", "orderNumber", "status", "createdAt",
+          "productIds", "items", "totals", "shipping"
+        ])
+        && request.resource.data.userId == userId
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.orderNumber is string
+        && request.resource.data.status == "demo-completed"
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.productIds is list
+        && request.resource.data.productIds.size() > 0
+        && request.resource.data.productIds.size() <= 20
+        && request.resource.data.items is list
+        && request.resource.data.totals is map
+        && request.resource.data.shipping is map
+        && request.resource.data.shipping.keys().hasAll([
+          "fullName", "email", "address", "city", "region", "postal", "phone"
+        ])
+        && request.resource.data.shipping.keys().hasOnly([
+          "fullName", "email", "address", "city", "region", "postal", "phone"
+        ]);
+    }
+
+    function validPurchase(userId, productId) {
+      let orderId = request.resource.data.orderId;
+      let orderPath = /databases/$(database)/documents/user/$(userId)/orders/$(orderId);
+      return signedInAs(userId)
+        && request.resource.data.keys().hasAll(["userId", "productId", "orderId", "createdAt"])
+        && request.resource.data.keys().hasOnly(["userId", "productId", "orderId", "createdAt"])
+        && request.resource.data.userId == userId
+        && request.resource.data.productId == productId
+        && request.resource.data.orderId is string
+        && request.resource.data.createdAt == request.time
+        && existsAfter(orderPath)
+        && getAfter(orderPath).data.userId == userId
+        && getAfter(orderPath).data.productIds.hasAny([productId]);
+    }
+
+    function validAddress(userId) {
+      return signedInAs(userId)
+        && request.resource.data.keys().hasAll([
+          "fullName", "address", "city", "region", "postal", "phone", "createdAt"
+        ])
+        && request.resource.data.keys().hasOnly([
+          "fullName", "address", "city", "region", "postal", "phone", "createdAt"
+        ])
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() > 0
+        && request.resource.data.fullName.size() <= 80
+        && request.resource.data.address is string
+        && request.resource.data.address.size() > 0
+        && request.resource.data.address.size() <= 160
+        && request.resource.data.city is string
+        && request.resource.data.city.size() > 0
+        && request.resource.data.city.size() <= 80
+        && request.resource.data.region is string
+        && request.resource.data.region.size() > 0
+        && request.resource.data.region.size() <= 80
+        && request.resource.data.postal is string
+        && request.resource.data.postal.size() > 0
+        && request.resource.data.postal.size() <= 20
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() > 0
+        && request.resource.data.phone.size() <= 30;
+    }
+
+    match /user/{userId} {
+      allow read: if signedInAs(userId);
+      allow create, update: if validUserProfile(userId);
+      allow delete: if false;
+
+      match /orders/{orderId} {
+        allow read: if signedInAs(userId);
+        allow create: if validOrder(userId);
+        allow update, delete: if false;
+      }
+
+      match /purchases/{productId} {
+        allow read: if signedInAs(userId);
+        allow create, update: if validPurchase(userId, productId);
+        allow delete: if false;
+      }
+
+      match /wishlist/{productId} {
+        allow read: if signedInAs(userId);
+        allow create, update: if signedInAs(userId)
+          && request.resource.data.keys().hasAll(["productId", "createdAt"])
+          && request.resource.data.keys().hasOnly(["productId", "createdAt"])
+          && request.resource.data.productId == productId
+          && request.resource.data.createdAt == request.time;
+        allow delete: if signedInAs(userId);
+      }
+
+      match /addresses/{addressId} {
+        allow read: if signedInAs(userId);
+        allow create: if validAddress(userId)
+          && request.resource.data.createdAt == request.time;
+        allow update: if validAddress(userId)
+          && request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if signedInAs(userId);
+      }
+    }
+
+    match /products/{productId}/reviews/{userId} {
+      allow read: if true;
+      allow create: if signedInAs(userId)
+        && request.resource.data.keys().hasAll([
+          "userId", "productId", "name", "rating", "text", "createdAt"
+        ])
+        && request.resource.data.keys().hasOnly([
+          "userId", "productId", "name", "rating", "text", "createdAt"
+        ])
+        && request.resource.data.userId == userId
+        && request.resource.data.productId == productId
+        && exists(/databases/$(database)/documents/user/$(userId)/purchases/$(productId))
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 40
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.text is string
+        && request.resource.data.text.size() >= 8
+        && request.resource.data.text.size() <= 800
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+  }
+}

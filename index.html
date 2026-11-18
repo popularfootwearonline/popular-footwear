@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Discover considered everyday footwear, made for wherever the day takes you."
+    />
+    <meta name="theme-color" content="#f7f8f7" />
+    <title>Popular Footwear — Shoes for Every Day</title>
+    <link rel="icon" href="assets/images/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="icon" href="assets/images/icon-512.png" type="image/png" sizes="512x512" />
+    <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      try {
+        const savedTheme = localStorage.getItem("popular-footwear-theme");
+        if (savedTheme === "dark" || savedTheme === "light") {
+          document.documentElement.dataset.theme = savedTheme;
+        }
+      } catch (error) {
+        console.error("Could not load the saved storefront theme.", error);
+      }
+    </script>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <script src="https://www.gstatic.com/firebasejs/13.3.0/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/13.3.0/firebase-auth-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore-compat.js" defer></script>
+    <script src="assets/js/firebase-config.js" defer></script>
+    <script src="assets/js/firebase-init.js" defer></script>
+    <script src="assets/js/app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#home" data-route="home" aria-label="Popular Footwear home">
+          <img class="brand-mark" src="assets/images/icon-192.png" alt="" />
+          <span>POPULAR FOOTWEAR<small>EVERYDAY SHOES</small></span>
+        </a>
+
+        <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">
+          <span></span><span></span>
+        </button>
+
+        <nav class="main-nav" aria-label="Main navigation">
+          <a href="#new-arrivals" data-route="catalog" data-category="New Arrivals">New Arrivals</a>
+          <a href="#men" data-route="catalog" data-category="Men">Men</a>
+          <a href="#women" data-route="catalog" data-category="Women">Women</a>
+          <a href="#kids" data-route="catalog" data-category="Kids">Kids</a>
+          <a href="#collections" data-route="catalog" data-category="Collections">Collections</a>
+        </nav>
+
+        <div class="header-actions">
+          <label class="search-box">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.1"></circle><path d="m16 16 5 5"></path></svg>
+            <input id="product-search" type="search" placeholder="Search" aria-label="Search footwear" />
+          </label>
+          <button class="ship-to" type="button" aria-label="Change shipping destination">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 10c0 5-7 12-7 12S5 15 5 10a7 7 0 1 1 14 0Z"></path><circle cx="12" cy="10" r="2.2"></circle></svg>
+            <span><small>Ship to:</small>Gangasagar, 743373</span>
+          </button>
+          <button class="icon-button theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch to dark theme">
+            <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"></path></svg>
+            <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.1A8.6 8.6 0 0 1 8.9 3.8 8.7 8.7 0 1 0 20.2 15.1Z"></path></svg>
+          </button>
+          <div class="account-control">
+            <button class="icon-button account-button" id="account-button" type="button" aria-label="Account options" aria-haspopup="true" aria-expanded="false" aria-controls="account-menu">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4"></circle><path d="M4.5 21v-2a7.5 7.5 0 0 1 15 0v2"></path></svg>
+            </button>
+            <div class="account-menu" id="account-menu" role="menu" aria-label="Account options" hidden></div>
+          </div>
+          <button class="icon-button cart-button" type="button" aria-label="Shopping bag, 0 items">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 12.2a2 2 0 0 0 2 1.7h8.5a2 2 0 0 0 2-1.6L21 8H6"></path><circle cx="10" cy="21" r="1"></circle><circle cx="18" cy="21" r="1"></circle></svg>
+            <span class="cart-count" aria-live="polite">0</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content" id="app-main"></main>
+    <footer class="site-footer">
+      <a class="brand footer-brand" href="#home" data-route="home" aria-label="Popular Footwear home">
+        <img class="brand-mark" src="assets/images/icon-192.png" alt="" />
+        <span>POPULAR FOOTWEAR<small>EVERYDAY SHOES</small></span>
+      </a>
+      <p>Considered footwear. Made for every day.</p>
+      <nav aria-label="Footer navigation">
+        <a href="#collections" data-route="catalog" data-category="Collections">Our collections</a>
+        <a href="#shipping" data-route="shipping">Shipping &amp; replacement policy</a>
+        <a href="#privacy" data-route="privacy">Privacy policy</a>
+        <a href="#account" data-route="account">Your account</a>
+      </nav>
+    </footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

@@ -9,7 +9,7 @@ let productImageZoom = 1;
 let productImagePanX = 0;
 let productImagePanY = 0;
 const productLoadTimeoutMs = 12000;
-const productAdminUid = "eFXrLX8bhUa6Pa5s8REHCLayHZg1";
+const productAdminUid = "esp7h3I69AZkr0RihFwk3oWmKaO2";
 
 const main = document.querySelector("#app-main");
 const searchInput = document.querySelector("#product-search");
@@ -5008,3 +5008,4 @@ updateCartBadge();
 void loadProducts();
 renderRoute();
 loadHomeSlider();
+
